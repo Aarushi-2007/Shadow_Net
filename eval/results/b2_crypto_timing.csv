@@ -1,0 +1,6 @@
+operation,mean_us,sd_us,p95_us
+X25519 keypair generation,42.3018,5.2000,54.3470
+X25519 ECDH shared secret,82.1894,8.1796,97.3550
+HKDF-SHA256 derive,6.2655,1.9854,7.2750
+AES-256-GCM seal 1 layer,1.4813,0.8358,1.4870
+AES-256-GCM open 1 layer,0.7671,0.6943,0.7730
