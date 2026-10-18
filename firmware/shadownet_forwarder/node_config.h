@@ -30,7 +30,7 @@
 #define LORA_TCXO_VOLTAGE 1.6
 
 // --- Gateway's public key, 32 bytes as hex from keygen.ino --------------
-#define GATEWAY_PUBKEY_HEX "0000000000000000000000000000000000000000000000000000000000000000"
+#define GATEWAY_PUBKEY_HEX "DF8847ACB4F49EE879A2BAC8F65B5FF1611328C9811429B9166700016438025F"
 
 // --- Demo behavior: does THIS board originate a request on a button press?
 //     Wire a push-button to this pin (active-low, internal pullup) to
