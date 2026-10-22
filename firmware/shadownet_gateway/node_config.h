@@ -43,3 +43,9 @@
 #define CARRIER_INTERVAL_MS 4000   // how often the Gateway starts a new cycle
                                    // (this is your privacy/latency/duty-cycle
                                    // tradeoff — see the process guide, Phase 4)
+
+// --- Onboard OLED (SSD1306 128x64, I2C) — Heltec WiFi LoRa 32 V3 ---------
+//     Shares the Vext power rail with the radio (VEXT_PIN LOW = on).
+#define OLED_SDA_PIN 17
+#define OLED_SCL_PIN 18
+#define OLED_RST_PIN 21

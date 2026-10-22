@@ -19,12 +19,14 @@
 #include "crypto.hpp"
 #include "packet.hpp"
 #include "ring_node.hpp"
+#include "display.hpp"
 
 using namespace shadownet;
 
 SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN);
 Preferences prefs;
 ForwarderNode node(MY_POSITION);
+char g_title[16];
 
 struct RadioFrame {
     uint8_t dest_hop; // 0 = Gateway, 1 = F1, 2 = F2
@@ -62,12 +64,16 @@ void setup() {
     Serial.print(F("=== ShadowNet Onion Ring — Forwarder F"));
     Serial.print(MY_POSITION);
     Serial.println(F(" ==="));
+    oledBegin();
+    snprintf(g_title, sizeof(g_title), "FORWARDER F%d", MY_POSITION);
+    oledShow(g_title, "Booting...");
 
     pinMode(DEMO_BUTTON_PIN, INPUT_PULLUP);
 
     prefs.begin("shadownet", true);
     if (!prefs.isKey("priv")) {
         Serial.println(F("FATAL: no keypair in flash. Flash tools/keygen to this board first."));
+        oledShow(g_title, "FATAL:", "no keypair in flash", "flash keygen first");
         while (true) delay(1000);
     }
     KeyPair kp{};
@@ -79,6 +85,7 @@ void setup() {
     uint8_t gw_pub[KEY_LEN];
     if (!hexToBytes(GATEWAY_PUBKEY_HEX, gw_pub, KEY_LEN)) {
         Serial.println(F("FATAL: GATEWAY_PUBKEY_HEX in node_config.h is malformed."));
+        oledShow(g_title, "FATAL:", "bad gateway pubkey", "check node_config.h");
         while (true) delay(1000);
     }
     node.set_gateway_pubkey(gw_pub);
@@ -94,11 +101,15 @@ void setup() {
     if (rstate != RADIOLIB_ERR_NONE) {
         Serial.print(F("FATAL: radio.begin() failed, code "));
         Serial.println(rstate);
+        char eb[22];
+        snprintf(eb, sizeof(eb), "radio.begin code %d", rstate);
+        oledShow(g_title, "FATAL:", eb);
         Serial.println(F("  (see README 'Heltec V3 / SX1262 notes')"));
         while (true) delay(1000);
     }
     radio.setDio2AsRfSwitch(true);
     Serial.println(F("Radio ready.\n"));
+    oledShow(g_title, "Radio ready", "waiting for ring init");
 }
 
 void handleRingInit(const WirePacket& pkt) {
@@ -106,10 +117,14 @@ void handleRingInit(const WirePacket& pkt) {
     WirePacket relay = node.handle_ring_init(pkt, ok);
     if (!ok) {
         Serial.println(F("  ring_init: FAILED to decrypt (check GATEWAY_PUBKEY_HEX)"));
+        oledShow(g_title, "ring init FAILED", "check GATEWAY key");
         return;
     }
     Serial.print(F("  joined ring_id="));
     Serial.println(node.active_ring_id());
+    char rid[22];
+    snprintf(rid, sizeof(rid), "joined ring %d", (int)node.active_ring_id());
+    oledShow(g_title, rid, node.is_last() ? "" : "relayed to next hop");
     if (!node.is_last()) {
         sendFrame(nextHop(), relay);
         Serial.println(F("  relayed ring_init to next hop"));
@@ -126,7 +141,11 @@ void handleUplinkCycle(const WirePacket& pkt) {
         Serial.print(F("  *** originating access request: \""));
         Serial.write(data, CONTROL_DATA_LEN);
         Serial.println(F("\" ***"));
+        char dat[22];
+        snprintf(dat, sizeof(dat), "%.*s", (int)CONTROL_DATA_LEN, (const char*)data);
+        oledShow(g_title, "ORIGINATING request", dat);
     }
+    if (!originate) oledShow(g_title, "uplink cycle", "relaying dummy");
     WirePacket out = node.process_uplink_cycle(pkt, originate, type, data);
     sendFrame(nextHop(), out);
 }
@@ -135,12 +154,16 @@ void handleDownlink(const WirePacket& pkt) {
     DownlinkStep step = node.process_downlink(pkt);
     if (!step.ok) {
         Serial.println(F("  downlink: FAILED to decrypt (not for our ring / tampered)"));
+        oledShow(g_title, "downlink FAILED", "not our ring/tampered");
         return;
     }
     if (step.consumed) {
         Serial.print(F("  downlink DELIVERED to us: \""));
         Serial.write(step.msg.data, CONTROL_DATA_LEN);
         Serial.println(F("\" -- sending ack upstream"));
+        char dl[22];
+        snprintf(dl, sizeof(dl), "%.*s", (int)CONTROL_DATA_LEN, (const char*)step.msg.data);
+        oledShow(g_title, "DOWNLINK DELIVERED", dl, "sending ack upstream");
         uint8_t ack[CONTROL_DATA_LEN] = {0};
         memcpy(ack, "ack", 3);
         WirePacket empty{}; // used_len=0: originate fresh, same as a cycle start
@@ -149,6 +172,7 @@ void handleDownlink(const WirePacket& pkt) {
     } else {
         sendFrame(nextHop(), step.forward);
         Serial.println(F("  relayed downlink remainder to next hop"));
+        oledShow(g_title, "downlink", "relayed to next hop");
     }
 }
 

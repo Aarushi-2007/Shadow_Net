@@ -36,3 +36,9 @@
 //     Wire a push-button to this pin (active-low, internal pullup) to
 //     trigger an access request during a live demo instead of scripting one.
 #define DEMO_BUTTON_PIN 0   // GPIO0 ("BOOT" button) on most ESP32 dev boards
+
+// --- Onboard OLED (SSD1306 128x64, I2C) — Heltec WiFi LoRa 32 V3 ---------
+//     Shares the Vext power rail with the radio (VEXT_PIN LOW = on).
+#define OLED_SDA_PIN 17
+#define OLED_SCL_PIN 18
+#define OLED_RST_PIN 21

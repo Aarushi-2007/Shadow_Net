@@ -26,8 +26,12 @@
 #include "crypto.hpp"
 #include "packet.hpp"
 #include "ring_node.hpp"
+#include "display.hpp"
 
 using namespace shadownet;
+
+#define STR_(x) #x
+#define STR(x) STR_(x)
 
 SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN);
 Preferences prefs;
@@ -85,11 +89,14 @@ void setup() {
     Serial.begin(115200);
     delay(1500);
     Serial.println(F("=== ShadowNet Onion Ring — Gateway ==="));
+    oledBegin();
+    oledShow("GATEWAY", "Booting...");
 
     // Load persistent keypair (generated once by tools/keygen).
     prefs.begin("shadownet", true);
     if (!prefs.isKey("priv")) {
         Serial.println(F("FATAL: no keypair in flash. Flash tools/keygen to this board first."));
+        oledShow("GATEWAY", "FATAL:", "no keypair in flash", "flash keygen first");
         while (true) delay(1000);
     }
     KeyPair kp{};
@@ -101,6 +108,7 @@ void setup() {
     uint8_t f1_pub[KEY_LEN], f2_pub[KEY_LEN];
     if (!hexToBytes(F1_PUBKEY_HEX, f1_pub, KEY_LEN) || !hexToBytes(F2_PUBKEY_HEX, f2_pub, KEY_LEN)) {
         Serial.println(F("FATAL: F1_PUBKEY_HEX / F2_PUBKEY_HEX in node_config.h are malformed."));
+        oledShow("GATEWAY", "FATAL:", "bad F1/F2 pubkey", "check node_config.h");
         while (true) delay(1000);
     }
     gw.add_forwarder(1, f1_pub);
@@ -121,6 +129,9 @@ void setup() {
     if (rstate != RADIOLIB_ERR_NONE) {
         Serial.print(F("FATAL: radio.begin() failed, code "));
         Serial.println(rstate);
+        char eb[22];
+        snprintf(eb, sizeof(eb), "radio.begin code %d", rstate);
+        oledShow("GATEWAY", "FATAL:", eb);
         Serial.println(F("  (see README 'Heltec V3 / SX1262 notes' — likely TCXO voltage"));
         Serial.println(F("   or a pin mismatch against your specific board revision.)"));
         while (true) delay(1000);
@@ -131,11 +142,13 @@ void setup() {
     // wrong even though begin() reports success.
     radio.setDio2AsRfSwitch(true);
     Serial.println(F("Radio ready."));
+    oledShow("GATEWAY", "Radio ready");
 
     // --- Ring initiation ---------------------------------------------------
     Serial.print(F("Starting ring epoch "));
     Serial.println(RING_EPOCH_ID);
     WirePacket ri = gw.start_ring(RING_EPOCH_ID);
+    oledShow("GATEWAY", "Ring init sent", "epoch " STR(RING_EPOCH_ID));
     sendFrame(1, ri); // -> F1
     delay(500);       // give F1 -> F2 relay time to happen over the air
     Serial.println(F("Ring init sent. (Watch F1/F2 Serial output to confirm they joined.)\n"));
@@ -146,6 +159,9 @@ void loop() {
     Serial.print(F("[cycle "));
     Serial.print(g_seq);
     Serial.println(F("] sending carrier..."));
+    char cyc[22];
+    snprintf(cyc, sizeof(cyc), "cycle %u", g_seq);
+    oledShow("GATEWAY", cyc, "sending carrier...");
 
     WirePacket carrier = gw.build_carrier(g_seq);
     sendFrame(1, carrier); // -> F1, who will relay through F2 and back to us
@@ -155,10 +171,14 @@ void loop() {
         UplinkResult r = gw.receive_uplink(incoming);
         if (!r.valid) {
             Serial.println(F("  received a frame but it didn't decode (wrong ring / tampered?)"));
+            oledShow("GATEWAY", cyc, "decode FAILED", "wrong ring/tampered");
         } else if (r.msg_type == PacketType::DUMMY) {
             Serial.print(F("  idle cycle (dummy content synthesized at position "));
             Serial.print(r.origin_position);
             Serial.println(F(")"));
+            char pos[22];
+            snprintf(pos, sizeof(pos), "dummy @ pos %d", (int)r.origin_position);
+            oledShow("GATEWAY", cyc, "idle cycle", pos);
         } else {
             Serial.print(F("  ACTIVE: origin=F"));
             Serial.print(r.origin_position);
@@ -168,8 +188,14 @@ void loop() {
             Serial.write(r.data.data(), CONTROL_DATA_LEN);
             Serial.println(F("\""));
 
+            char org[22], dat[22];
+            snprintf(org, sizeof(org), "ACTIVE from F%d", (int)r.origin_position);
+            snprintf(dat, sizeof(dat), "%.*s", (int)CONTROL_DATA_LEN, (const char*)r.data.data());
+            oledShow("GATEWAY", cyc, org, dat);
+
             if (r.msg_type == PacketType::ACCESS_REQUEST) {
                 Serial.println(F("  -> granting + sending downlink reply..."));
+                oledShow("GATEWAY", cyc, org, dat, "granting downlink...");
                 uint8_t reply[CONTROL_DATA_LEN] = {0};
                 memcpy(reply, "200 OK ack", 10);
                 WirePacket dl = gw.build_downlink(r.origin_position, PacketType::GRANT_DOWNLINK, reply, g_seq);
@@ -178,6 +204,7 @@ void loop() {
         }
     } else {
         Serial.println(F("  no reply within timeout (check F1/F2 power + wiring)"));
+        oledShow("GATEWAY", cyc, "no reply (timeout)", "check F1/F2 power");
     }
     Serial.println();
 }
