@@ -33,6 +33,35 @@ struct RadioFrame {
     uint8_t payload[WIRE_PACKET_SIZE];
 };
 
+// Message typed into the Serial Monitor, queued until this board's next
+// uplink cycle. Truncated to CONTROL_DATA_LEN bytes (the payload size).
+char g_pending[CONTROL_DATA_LEN + 1] = {0};
+bool g_has_pending = false;
+
+void pollSerialInput() {
+    static char line[64];
+    static size_t n = 0;
+    while (Serial.available()) {
+        char c = (char)Serial.read();
+        if (c == '\r') continue;
+        if (c != '\n') {
+            if (n < sizeof(line) - 1) line[n++] = c;
+            continue;
+        }
+        line[n] = 0;
+        if (n > 0) {
+            snprintf(g_pending, sizeof(g_pending), "%s", line);
+            g_has_pending = true;
+            if (n > CONTROL_DATA_LEN) Serial.println(F("  (message truncated to 16 chars)"));
+            Serial.print(F("  queued message: \""));
+            Serial.print(g_pending);
+            Serial.println(F("\" -- will send on next cycle"));
+            oledShow(g_title, "queued:", g_pending, "sends next cycle");
+        }
+        n = 0;
+    }
+}
+
 uint8_t nextHop() { return node.is_last() ? 0 : (uint8_t)(MY_POSITION + 1); }
 
 bool hexToBytes(const char* hex, uint8_t* out, size_t out_len) {
@@ -132,12 +161,14 @@ void handleRingInit(const WirePacket& pkt) {
 }
 
 void handleUplinkCycle(const WirePacket& pkt) {
-    bool originate = digitalRead(DEMO_BUTTON_PIN) == LOW;
+    bool originate = g_has_pending || digitalRead(DEMO_BUTTON_PIN) == LOW;
     uint8_t data[CONTROL_DATA_LEN] = {0};
     PacketType type = PacketType::DUMMY;
     if (originate) {
         type = PacketType::ACCESS_REQUEST;
-        snprintf(reinterpret_cast<char*>(data), CONTROL_DATA_LEN, "F%d button req", MY_POSITION);
+        if (g_has_pending) memcpy(data, g_pending, strnlen(g_pending, CONTROL_DATA_LEN));
+        else memcpy(data, "hii", 3); // PRG button with nothing typed
+        g_has_pending = false;
         Serial.print(F("  *** originating access request: \""));
         Serial.write(data, CONTROL_DATA_LEN);
         Serial.println(F("\" ***"));
@@ -177,6 +208,7 @@ void handleDownlink(const WirePacket& pkt) {
 }
 
 void loop() {
+    pollSerialInput();
     RadioFrame f;
     int state = radio.receive(reinterpret_cast<uint8_t*>(&f), sizeof(f));
     if (state != RADIOLIB_ERR_NONE) return; // timeout / CRC error — just keep listening

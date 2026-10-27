@@ -202,6 +202,9 @@ void loop() {
                 sendFrame(1, dl); // downlink always starts at F1
             }
         }
+        // Keep the result on the OLED readable; otherwise the next loop()
+        // iteration overwrites it with "sending carrier..." within ms.
+        delay(RESULT_HOLD_MS);
     } else {
         Serial.println(F("  no reply within timeout (check F1/F2 power + wiring)"));
         oledShow("GATEWAY", cyc, "no reply (timeout)", "check F1/F2 power");

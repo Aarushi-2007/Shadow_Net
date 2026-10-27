@@ -41,6 +41,7 @@
 
 // --- Demo behavior -------------------------------------------------------
 #define CARRIER_INTERVAL_MS 4000   // how often the Gateway starts a new cycle
+#define RESULT_HOLD_MS 3000        // how long the OLED keeps showing a received result
                                    // (this is your privacy/latency/duty-cycle
                                    // tradeoff — see the process guide, Phase 4)
 
