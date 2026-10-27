@@ -16,7 +16,6 @@
 #include <SPI.h>
 #include <Preferences.h>
 #include "node_config.h"
-#include "oled.h" 
 #include "crypto.hpp"
 #include "packet.hpp"
 #include "ring_node.hpp"
