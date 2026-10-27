@@ -47,6 +47,7 @@
 
 // --- Onboard OLED (SSD1306 128x64, I2C) — Heltec WiFi LoRa 32 V3 ---------
 //     Shares the Vext power rail with the radio (VEXT_PIN LOW = on).
+#define USE_OLED     1
 #define OLED_SDA_PIN 17
 #define OLED_SCL_PIN 18
 #define OLED_RST_PIN 21
