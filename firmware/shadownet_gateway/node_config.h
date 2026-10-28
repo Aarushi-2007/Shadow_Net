@@ -23,7 +23,20 @@
                               // a 433, 470, 868, or 915 MHz variant — using the wrong one
                               // for your specific unit won't error, it'll just never link.
 #define LORA_BW_KHZ   125.0
-#define LORA_SF       9
+// Spreading factor. This was 9, and that was the bug that made the ring
+// never close: at SF9 a 129-byte frame spends 914 ms in the air, so one
+// G->F1->F2->G lap costs ~2.75 s of pure transmission before any crypto,
+// radio turnaround or missed receive window is counted. The gateway only
+// waits CARRIER_INTERVAL_MS (4 s) for the lap to finish, so a single
+// hiccup anywhere pushed the reply past the deadline and the gateway
+// logged a timeout -- every cycle, forever, while the forwarders happily
+// relayed and looked perfectly healthy.
+//
+// SF7 cuts a frame to 293 ms and a full lap to ~880 ms, leaving over 4x
+// headroom in the same window. Range drops (SF7 is the shortest-range
+// setting), but for three boards on a bench that is irrelevant.
+// MUST be identical on all three boards.
+#define LORA_SF       7
 #define LORA_CR       7
 #define LORA_SYNCWORD 0x12
 #define LORA_POWER_DBM 14
@@ -41,6 +54,15 @@
 
 // --- Demo behavior -------------------------------------------------------
 #define CARRIER_INTERVAL_MS 4000   // how often the Gateway starts a new cycle
+// How long to wait after announcing the ring before the first carrier
+// goes out. The old value was an inline delay(500), which was shorter
+// than the time F1 needs just to RECEIVE the announcement (914 ms at
+// SF9) -- so the gateway started transmitting carriers while F1 was
+// still relaying the announcement to F2, and the two collided. F2
+// therefore never joined, sat on ring_id 0, and every packet it sent
+// was discarded by the gateway's ring_id check.
+#define RING_SETTLE_MS 2500
+
 #define RESULT_HOLD_MS 3000        // how long the OLED keeps showing a received result
                                    // (this is your privacy/latency/duty-cycle
                                    // tradeoff — see the process guide, Phase 4)
