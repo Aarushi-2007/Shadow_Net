@@ -23,15 +23,7 @@
 #define LORA_FREQ_MHZ 433.0   // CHECK your board's silkscreen/listing — see gateway's
                               // node_config.h comment; must match the Gateway exactly.
 #define LORA_BW_KHZ   125.0
-// Spreading factor. This was 9, and that was the bug that made the ring
-// never close: at SF9 a 129-byte frame spends 914 ms in the air, so one
-// G->F1->F2->G lap costs ~2.75 s of pure transmission before any crypto,
-// radio turnaround or missed receive window is counted. The gateway only
-// waits CARRIER_INTERVAL_MS (4 s) for the lap to finish, so a single
-// hiccup anywhere pushed the reply past the deadline and the gateway
-// logged a timeout -- every cycle, forever, while the forwarders happily
-// relayed and looked perfectly healthy.
-//
+
 // SF7 cuts a frame to 293 ms and a full lap to ~880 ms, leaving over 4x
 // headroom in the same window. Range drops (SF7 is the shortest-range
 // setting), but for three boards on a bench that is irrelevant.
