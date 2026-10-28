@@ -46,6 +46,41 @@ static_assert(sizeof(RadioFrame) == 1 + WIRE_PACKET_SIZE, "unexpected padding in
 
 uint16_t g_seq = 0;
 
+// --- Ring re-announcement -----------------------------------------------
+// The gateway used to announce the ring exactly once, inside setup(), so
+// the whole system depended on power-on order: a forwarder that booted
+// late, missed the announcement, or was reset mid-session stayed on
+// ring_id 0 forever. receive_uplink() drops anything whose ring_id does
+// not match, silently -- so from the outside every board looked healthy,
+// counters climbing, while no message could ever complete a lap.
+//
+// Re-announcing on a timer makes the ring self-healing: boot the boards
+// in any order, reset any of them at any time, and they rejoin within a
+// few seconds on their own.
+#define RING_REANNOUNCE_CYCLES 10   // routine refresh, every N cycles
+#define RING_REANNOUNCE_FAILS   3   // or straight away after N bad cycles
+
+uint8_t  g_consecutive_fails = 0;
+uint16_t g_last_announce_seq = 0;
+
+void announceRing(const char* why) {
+    Serial.print(F("[ring] announcing epoch "));
+    Serial.print(RING_EPOCH_ID);
+    Serial.print(F(" ("));
+    Serial.print(why);
+    Serial.println(F(")"));
+
+    oledShow("GATEWAY", "announcing ring", "epoch " STR(RING_EPOCH_ID), why);
+
+    WirePacket ri = gw.start_ring(RING_EPOCH_ID);
+    sendFrame(1, ri);          // -> F1, who relays the inner layer to F2
+    delay(RING_SETTLE_MS);     // let the F1 -> F2 relay finish before we
+                               // put a carrier on top of it
+
+    g_last_announce_seq = g_seq;
+    g_consecutive_fails = 0;
+}
+
 bool hexToBytes(const char* hex, uint8_t* out, size_t out_len) {
     for (size_t i = 0; i < out_len; ++i) {
         char hi = hex[2 * i], lo = hex[2 * i + 1];
@@ -147,15 +182,17 @@ void setup() {
     // --- Ring initiation ---------------------------------------------------
     Serial.print(F("Starting ring epoch "));
     Serial.println(RING_EPOCH_ID);
-    WirePacket ri = gw.start_ring(RING_EPOCH_ID);
-    oledShow("GATEWAY", "Ring init sent", "epoch " STR(RING_EPOCH_ID));
-    sendFrame(1, ri); // -> F1
-    delay(500);       // give F1 -> F2 relay time to happen over the air
-    Serial.println(F("Ring init sent. (Watch F1/F2 Serial output to confirm they joined.)\n"));
+    announceRing("boot");
+    Serial.println(F("Ring init sent. (Watch F1/F2 screens for 'joined ring 7'.)\n"));
 }
 
 void loop() {
     g_seq++;
+
+    // Routine refresh so a late or restarted forwarder converges by itself.
+    if ((uint16_t)(g_seq - g_last_announce_seq) >= RING_REANNOUNCE_CYCLES) {
+        announceRing("periodic");
+    }
     Serial.print(F("[cycle "));
     Serial.print(g_seq);
     Serial.println(F("] sending carrier..."));
@@ -172,6 +209,7 @@ void loop() {
         if (!r.valid) {
             Serial.println(F("  received a frame but it didn't decode (wrong ring / tampered?)"));
             oledShow("GATEWAY", cyc, "decode FAILED", "wrong ring/tampered");
+            g_consecutive_fails++;
         } else if (r.msg_type == PacketType::DUMMY) {
             Serial.print(F("  idle cycle (dummy content synthesized at position "));
             Serial.print(r.origin_position);
@@ -179,6 +217,7 @@ void loop() {
             char pos[22];
             snprintf(pos, sizeof(pos), "dummy @ pos %d", (int)r.origin_position);
             oledShow("GATEWAY", cyc, "idle cycle", pos);
+            g_consecutive_fails = 0;   // a clean lap: the ring is healthy
         } else {
             Serial.print(F("  ACTIVE: origin=F"));
             Serial.print(r.origin_position);
@@ -192,6 +231,7 @@ void loop() {
             snprintf(org, sizeof(org), "ACTIVE from F%d", (int)r.origin_position);
             snprintf(dat, sizeof(dat), "%.*s", (int)CONTROL_DATA_LEN, (const char*)r.data.data());
             oledShow("GATEWAY", cyc, org, dat);
+            g_consecutive_fails = 0;   // a clean lap: the ring is healthy
 
             if (r.msg_type == PacketType::ACCESS_REQUEST) {
                 Serial.println(F("  -> granting + sending downlink reply..."));
@@ -208,6 +248,14 @@ void loop() {
     } else {
         Serial.println(F("  no reply within timeout (check F1/F2 power + wiring)"));
         oledShow("GATEWAY", cyc, "no reply (timeout)", "check F1/F2 power");
+        g_consecutive_fails++;
     }
+    if (g_consecutive_fails >= RING_REANNOUNCE_FAILS) {
+        // Several laps in a row came back wrong or not at all -- most
+        // likely a forwarder rebooted onto the wrong epoch. Re-announce
+        // rather than sit in a dead ring.
+        announceRing("recovery");
+    }
+
     Serial.println();
 }
