@@ -22,7 +22,7 @@ namespace shadownet {
 namespace lora {
 
 struct PhyConfig {
-    int sf = 9;              // spreading factor 6..12
+    int sf = 7;              // spreading factor 6..12
     double bw_hz = 125000.0; // bandwidth in Hz
     int cr_denom = 7;        // RadioLib style: 5..8 meaning coding rate 4/5..4/8
     int preamble_syms = 8;
