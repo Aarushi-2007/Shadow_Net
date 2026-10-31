@@ -61,9 +61,31 @@
 // still relaying the announcement to F2, and the two collided. F2
 // therefore never joined, sat on ring_id 0, and every packet it sent
 // was discarded by the gateway's ring_id check.
+// --- Operator view -----------------------------------------------------
+// The Gateway must know which ring position originated a packet: it has to
+// encrypt the reply under that node's session key, so there is no way to
+// make the routing layer blind. What CAN be withheld is everything above
+// it -- the display and the log.
+//
+// With SHOW_ORIGIN 0 the node number is used only inside the few lines
+// that build the reply, and is never printed, shown or stored. The
+// operator sees a report identified solely by where it came from on the
+// ground. Set to 1 while debugging, when you need to know which board
+// is talking.
+#define SHOW_ORIGIN 0
+
 #define RING_SETTLE_MS 2500
 
-#define RESULT_HOLD_MS 3000        // how long the OLED keeps showing a received result
+// How long the OLED holds a result before the next cycle overwrites it.
+// These are blocking delays on the Gateway, which paces the ring, so they
+// set the visible cycle length. They affect NOTHING in the protocol --
+// raise them freely for a demo, lower them when collecting timing data.
+//
+// Two values, because an idle cycle is not worth staring at while a real
+// report is: idle cycles stay brisk and reports stay up long enough to
+// read out loud.
+#define RESULT_HOLD_MS 2500        // an idle / dummy cycle
+#define REPORT_HOLD_MS 9000        // a real report arrived -- hold it
                                    // (this is your privacy/latency/duty-cycle
                                    // tradeoff — see the process guide, Phase 4)
 
