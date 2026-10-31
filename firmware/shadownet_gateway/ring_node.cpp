@@ -172,7 +172,17 @@ UplinkResult GatewayNode::receive_uplink(const WirePacket& pkt) const {
     // wrong candidate fails to verify with probability 1 - 2^-128, so at
     // most one candidate can succeed. Cost is at most RING_SIZE extra
     // decrypt attempts, all at the Gateway, none on a forwarder.
+#ifndef SHADOWNET_VULNERABLE_DEMO
     if (pkt.used_len() != ONION_BODY_LEN) return r; // malformed
+#else
+    // In the deliberately broken build `used_len` carries the TRUE body
+    // length, which is the leak being demonstrated. The body on the wire is
+    // still physically padded to ONION_BODY_LEN, so trial decryption below
+    // works unchanged -- we just must not reject the packet for having an
+    // honest length field, or the broken build would fail to deliver
+    // anything and the demo would show a dead ring instead of a live leak.
+    (void)0;
+#endif
 
     for (size_t origin = 1; origin <= RING_SIZE; ++origin) {
         std::vector<uint8_t> buf(pkt.ciphertext,
