@@ -25,6 +25,7 @@
 #include "node_config.h"
 #include "crypto.hpp"
 #include "packet.hpp"
+#include "geo.h"
 #include "ring_node.hpp"
 #include "display.hpp"
 
@@ -45,6 +46,20 @@ struct RadioFrame {
 static_assert(sizeof(RadioFrame) == 1 + WIRE_PACKET_SIZE, "unexpected padding in RadioFrame");
 
 uint16_t g_seq = 0;
+
+// --- Battery-demo scoreboard -------------------------------------------
+// With no Serial Monitor attached, the 128x64 screen has to carry the
+// whole story on its own. These two counters are the headline: how many
+// laps came back intact, and how many were rejected because something had
+// altered them in flight. A tamper attack moves the second number and
+// nothing else, which is the entire claim in one line of text.
+uint32_t g_ok       = 0;   // laps that decrypted and verified
+uint32_t g_rejected = 0;   // laps rejected -- bad auth tag / wrong ring
+
+void scoreLine(char* buf, size_t len) {
+    snprintf(buf, len, "ok %lu   bad %lu",
+             (unsigned long)g_ok, (unsigned long)g_rejected);
+}
 
 // --- Ring re-announcement -----------------------------------------------
 // The gateway used to announce the ring exactly once, inside setup(), so
@@ -204,47 +219,79 @@ void loop() {
     sendFrame(1, carrier); // -> F1, who will relay through F2 and back to us
 
     WirePacket incoming;
+    uint32_t hold_ms = RESULT_HOLD_MS;   // raised below when a report lands
     if (recvFrameFor(0, incoming, CARRIER_INTERVAL_MS)) {
         UplinkResult r = gw.receive_uplink(incoming);
         if (!r.valid) {
             Serial.println(F("  received a frame but it didn't decode (wrong ring / tampered?)"));
-            oledShow("GATEWAY", cyc, "decode FAILED", "wrong ring/tampered");
+            g_rejected++;
             g_consecutive_fails++;
+            {
+                char sc[22];
+                scoreLine(sc, sizeof(sc));
+                oledShow("** TAMPER **", cyc, "packet was ALTERED",
+                         "rejected by gateway", sc);
+            }
         } else if (r.msg_type == PacketType::DUMMY) {
             Serial.print(F("  idle cycle (dummy content synthesized at position "));
             Serial.print(r.origin_position);
             Serial.println(F(")"));
             char pos[22];
             snprintf(pos, sizeof(pos), "dummy @ pos %d", (int)r.origin_position);
-            oledShow("GATEWAY", cyc, "idle cycle", pos);
+            g_ok++;
+            {
+                char sc[22];
+                scoreLine(sc, sizeof(sc));
+                oledShow("GATEWAY", cyc, "idle cycle", pos, sc);
+            }
             g_consecutive_fails = 0;   // a clean lap: the ring is healthy
         } else {
-            Serial.print(F("  ACTIVE: origin=F"));
-            Serial.print(r.origin_position);
-            Serial.print(F(" type="));
-            Serial.print((int)r.msg_type);
-            Serial.print(F(" data=\""));
-            Serial.write(r.data.data(), CONTROL_DATA_LEN);
+            // The node number lives only in r.origin_position, which is
+            // used a few lines below to address the reply and nowhere else.
+            // Nothing above this layer records or displays it.
+#if SHOW_ORIGIN
+            Serial.print(F("  [debug] origin=F"));
+            Serial.println(r.origin_position);
+#endif
+            GeoReport gr{};
+            memcpy(&gr, r.data.data(), CONTROL_DATA_LEN);
+            char pos[24], note[9] = {0};
+            geo_pair(gr, pos, sizeof(pos));
+            memcpy(note, gr.note, sizeof(gr.note));
+
+            Serial.print(F("  REPORT received at "));
+            Serial.print(pos);
+            Serial.print(F("  note=\""));
+            Serial.print(note);
             Serial.println(F("\""));
 
-            char org[22], dat[22];
-            snprintf(org, sizeof(org), "ACTIVE from F%d", (int)r.origin_position);
-            snprintf(dat, sizeof(dat), "%.*s", (int)CONTROL_DATA_LEN, (const char*)r.data.data());
-            oledShow("GATEWAY", cyc, org, dat);
+            g_ok++;
             g_consecutive_fails = 0;   // a clean lap: the ring is healthy
+            hold_ms = REPORT_HOLD_MS;  // a report is worth reading
 
+            // Send the reply BEFORE drawing, then draw once. The previous
+            // version drew the report and then immediately overwrote it
+            // with a "replying" screen, so the report itself was visible
+            // for microseconds and never actually readable.
+            const char* reply_line = "";
             if (r.msg_type == PacketType::ACCESS_REQUEST) {
                 Serial.println(F("  -> granting + sending downlink reply..."));
-                oledShow("GATEWAY", cyc, org, dat, "granting downlink...");
                 uint8_t reply[CONTROL_DATA_LEN] = {0};
                 memcpy(reply, "200 OK ack", 10);
                 WirePacket dl = gw.build_downlink(r.origin_position, PacketType::GRANT_DOWNLINK, reply, g_seq);
                 sendFrame(1, dl); // downlink always starts at F1
+                reply_line = "replied: 200 OK";
+            }
+
+            {
+                char sc[22];
+                scoreLine(sc, sizeof(sc));
+                oledShow("** REPORT **", cyc, pos, note, reply_line, sc);
             }
         }
         // Keep the result on the OLED readable; otherwise the next loop()
         // iteration overwrites it with "sending carrier..." within ms.
-        delay(RESULT_HOLD_MS);
+        delay(hold_ms);
     } else {
         Serial.println(F("  no reply within timeout (check F1/F2 power + wiring)"));
         oledShow("GATEWAY", cyc, "no reply (timeout)", "check F1/F2 power");
