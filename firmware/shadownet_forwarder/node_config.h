@@ -40,6 +40,35 @@
 // --- Demo behavior: does THIS board originate a request on a button press?
 //     Wire a push-button to this pin (active-low, internal pullup) to
 //     trigger an access request during a live demo instead of scripting one.
+// --- Attack demonstration ----------------------------------------------
+// Set to 1 to turn THIS board into a compromised relay. It keeps forwarding
+// correctly -- a node that stopped relaying would just be noticed -- but it
+// also tries to work out whether the node before it in the ring originated
+// the packet it is carrying.
+//
+// It attacks the only thing it can read without any key: the cleartext
+// header. Before the padding fix this worked perfectly, because an
+// originating node stamped the real message type and the real body length
+// there. The fix makes both constant, so the attack sees nothing.
+//
+// Enable this on F2, which sits directly after F1 in the ring and so
+// carries F1's traffic. Leave it 0 on F1.
+#define ATTACK_MODE 0
+
+
+// --- Geo report --------------------------------------------------------
+// The payload is a position fix plus a short tag instead of free text.
+// Same 16 bytes, so nothing about the anonymity properties changes.
+//
+// With no GPS module attached the coordinates below are used. Type
+// "lat,lon" or "lat,lon,NOTE" into the Serial Monitor to override them at
+// run time; a line with no comma is treated as the note alone. When a real
+// module arrives, fill readGps() in the sketch and the rest is unchanged.
+#define GEO_REPORT  1
+#define HOME_LAT_E7 317754000   // +31.7754  (IIT Mandi, Kamand)
+#define HOME_LON_E7 769861000   // +76.9861
+#define DEFAULT_NOTE "ENEMY"
+
 #define DEMO_BUTTON_PIN 0   // GPIO0 ("BOOT" button) on most ESP32 dev boards
 
 // --- Onboard OLED (SSD1306 128x64, I2C) — Heltec WiFi LoRa 32 V3 ---------
