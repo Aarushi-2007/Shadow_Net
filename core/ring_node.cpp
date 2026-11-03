@@ -162,54 +162,97 @@ WirePacket GatewayNode::build_downlink(uint8_t target_position, PacketType type,
 
 UplinkResult GatewayNode::receive_uplink(const WirePacket& pkt) const {
     UplinkResult r{};
-    if (pkt.ring_id != ring_id_) return r; // not for the active ring epoch
 
-    // Every uplink body is now padded to the same length, so length no
-    // longer tells us the onion depth — that was the whole point of the
-    // padding (see packet.hpp). Instead we recover the origin by trial
-    // decryption: try each candidate origin position, peeling the layers
-    // that origin implies. AES-GCM's auth tag makes this unambiguous — a
-    // wrong candidate fails to verify with probability 1 - 2^-128, so at
-    // most one candidate can succeed. Cost is at most RING_SIZE extra
-    // decrypt attempts, all at the Gateway, none on a forwarder.
+    // 1. Ignore packets from another ring or an old ring epoch.
+    if (pkt.ring_id != ring_id_) {
+        r.status = UplinkStatus::IGNORE_WRONG_RING;
+        return r;
+    }
+
+    // 2. Check the expected packet length.
 #ifndef SHADOWNET_VULNERABLE_DEMO
-    if (pkt.used_len() != ONION_BODY_LEN) return r; // malformed
-#else
-    // In the deliberately broken build `used_len` carries the TRUE body
-    // length, which is the leak being demonstrated. The body on the wire is
-    // still physically padded to ONION_BODY_LEN, so trial decryption below
-    // works unchanged -- we just must not reject the packet for having an
-    // honest length field, or the broken build would fail to deliver
-    // anything and the demo would show a dead ring instead of a live leak.
-    (void)0;
+    if (pkt.used_len() != ONION_BODY_LEN) {
+        r.status = UplinkStatus::INVALID_LENGTH;
+        return r;
+    }
 #endif
 
+    bool fully_authenticated = false;
+
+    // 3. Try each possible origin position.
     for (size_t origin = 1; origin <= RING_SIZE; ++origin) {
-        std::vector<uint8_t> buf(pkt.ciphertext,
-                                  pkt.ciphertext + onion_real_len(RING_SIZE));
+
+        std::vector<uint8_t> buf(
+            pkt.ciphertext,
+            pkt.ciphertext + onion_real_len(RING_SIZE)
+        );
+
         bool ok = true;
+
+        // Peel the layers expected for this origin.
         for (size_t p = RING_SIZE; p >= origin; --p) {
-            buf.resize(onion_real_len(p)); // discard this level's random padding
+
+            buf.resize(onion_real_len(p));
+
             std::vector<uint8_t> next;
-            if (!decrypt_layer(session_keys_[p].data(), buf.data(), buf.size(), next)) {
+
+            if (!decrypt_layer(
+                    session_keys_[p].data(),
+                    buf.data(),
+                    buf.size(),
+                    next
+                )) {
                 ok = false;
                 break;
             }
+
             buf = std::move(next);
+
             if (p == origin) break;
         }
-        if (!ok || buf.size() < CONTROL_MSG_LEN) continue;
+
+        if (!ok) {
+            continue;
+        }
+
+        // All expected encryption layers were successfully authenticated.
+        fully_authenticated = true;
+
+        // 4. Validate the decrypted control message.
+        if (buf.size() < CONTROL_MSG_LEN) {
+            continue;
+        }
 
         ControlMsg cm;
         std::memcpy(&cm, buf.data(), CONTROL_MSG_LEN);
-        if (cm.magic != CONTROL_MAGIC) continue;
 
+        if (cm.magic != CONTROL_MAGIC) {
+            continue;
+        }
+
+        // 5. Successfully authenticated and decoded.
+        r.status = UplinkStatus::VALID;
         r.valid = true;
+
         r.origin_position = static_cast<uint8_t>(origin);
         r.msg_type = static_cast<PacketType>(cm.msg_type);
-        std::memcpy(r.data.data(), cm.data, CONTROL_DATA_LEN);
+
+        std::memcpy(
+            r.data.data(),
+            cm.data,
+            CONTROL_DATA_LEN
+        );
+
         return r;
     }
+
+    // 6. Distinguish authentication failure from invalid decrypted content.
+    if (fully_authenticated) {
+        r.status = UplinkStatus::INVALID_CONTENT;
+    } else {
+        r.status = UplinkStatus::AUTH_FAILED;
+    }
+
     return r;
 }
 
