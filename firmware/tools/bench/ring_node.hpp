@@ -61,9 +61,19 @@ void derive_session_key(const uint8_t link_key[KEY_LEN], uint8_t ring_id,
                          uint8_t node_id, uint8_t session_key_out[KEY_LEN]);
 
 // Result of a Gateway peeling an uplink packet.
+enum class UplinkStatus {
+    VALID,
+    IGNORE_WRONG_RING,
+    INVALID_LENGTH,
+    AUTH_FAILED,
+    INVALID_CONTENT
+};
+
 struct UplinkResult {
+    UplinkStatus status = UplinkStatus::AUTH_FAILED;
     bool valid = false;
-    uint8_t origin_position = 0;   // which forwarder (1..RING_SIZE) produced this content
+
+    uint8_t origin_position = 0;
     PacketType msg_type = PacketType::DUMMY;
     std::array<uint8_t, CONTROL_DATA_LEN> data{};
 };
