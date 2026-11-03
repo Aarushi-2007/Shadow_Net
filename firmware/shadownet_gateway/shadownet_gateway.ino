@@ -221,42 +221,119 @@ void loop() {
     WirePacket incoming;
     uint32_t hold_ms = RESULT_HOLD_MS;   // raised below when a report lands
     if (recvFrameFor(0, incoming, CARRIER_INTERVAL_MS)) {
-        UplinkResult r = gw.receive_uplink(incoming);
-        if (!r.valid) {
-            Serial.println(F("  received a frame but it didn't decode (wrong ring / tampered?)"));
-            g_rejected++;
-            g_consecutive_fails++;
-            hold_ms = TAMPER_HOLD_MS;
-            {
-                char sc[22];
-                scoreLine(sc, sizeof(sc));
-                oledShow("** TAMPER **", cyc, "packet was ALTERED",
-                         "rejected by gateway", sc);
-            }
-        } else if (r.msg_type == PacketType::DUMMY) {
+
+    UplinkResult r = gw.receive_uplink(incoming);
+
+    // ---------------------------------------------------------
+    // CASE 1: Wrong ring ID
+    // ---------------------------------------------------------
+    if (r.status == UplinkStatus::IGNORE_WRONG_RING) {
+
+        Serial.println(F("  ignored packet: wrong ring ID"));
+
+        char sc[22];
+        scoreLine(sc, sizeof(sc));
+
+        oledShow("IGNORED PACKET", cyc,
+                 "wrong ring ID",
+                 "not counted as attack", sc);
+
+        // Do not increment g_rejected or g_consecutive_fails.
+    }
+
+    // ---------------------------------------------------------
+    // CASE 2: Invalid packet length
+    // ---------------------------------------------------------
+    else if (r.status == UplinkStatus::INVALID_LENGTH) {
+
+        Serial.println(F("  rejected packet: invalid length"));
+
+        g_rejected++;
+        g_consecutive_fails++;
+
+        char sc[22];
+        scoreLine(sc, sizeof(sc));
+
+        oledShow("INVALID PACKET", cyc,
+                 "invalid length",
+                 "packet rejected", sc);
+    }
+
+    // ---------------------------------------------------------
+    // CASE 3: Authentication failure
+    // ---------------------------------------------------------
+    else if (r.status == UplinkStatus::AUTH_FAILED) {
+
+        Serial.println(F("  authentication failed - possible tampering"));
+
+        g_rejected++;
+        g_consecutive_fails++;
+
+        char sc[22];
+        scoreLine(sc, sizeof(sc));
+
+        oledShow("AUTH FAILED", cyc,
+                 "possible tampering",
+                 "packet rejected", sc);
+    }
+
+    // ---------------------------------------------------------
+    // CASE 4: Decryption succeeded, but content is invalid
+    // ---------------------------------------------------------
+    else if (r.status == UplinkStatus::INVALID_CONTENT) {
+
+        Serial.println(F("  rejected packet: invalid decrypted content"));
+
+        g_rejected++;
+        g_consecutive_fails++;
+
+        char sc[22];
+        scoreLine(sc, sizeof(sc));
+
+        oledShow("INVALID CONTENT", cyc,
+                 "message rejected",
+                 "check packet", sc);
+    }
+
+    // ---------------------------------------------------------
+    // CASE 5: Valid packet
+    // ---------------------------------------------------------
+    else if (r.status == UplinkStatus::VALID) {
+
+        // DUMMY packet
+        if (r.msg_type == PacketType::DUMMY) {
+
             Serial.print(F("  idle cycle (dummy content synthesized at position "));
             Serial.print(r.origin_position);
             Serial.println(F(")"));
+
             char pos[22];
-            snprintf(pos, sizeof(pos), "dummy @ pos %d", (int)r.origin_position);
+            snprintf(pos, sizeof(pos), "dummy @ pos %d",
+                     (int)r.origin_position);
+
             g_ok++;
-            {
-                char sc[22];
-                scoreLine(sc, sizeof(sc));
-                oledShow("GATEWAY", cyc, "idle cycle", pos, sc);
-            }
-            g_consecutive_fails = 0;   // a clean lap: the ring is healthy
-        } else {
-            // The node number lives only in r.origin_position, which is
-            // used a few lines below to address the reply and nowhere else.
-            // Nothing above this layer records or displays it.
+
+            char sc[22];
+            scoreLine(sc, sizeof(sc));
+
+            oledShow("GATEWAY", cyc, "idle cycle", pos, sc);
+
+            g_consecutive_fails = 0;
+        }
+
+        // Genuine report packet
+        else {
+
 #if SHOW_ORIGIN
             Serial.print(F("  [debug] origin=F"));
             Serial.println(r.origin_position);
 #endif
+
             GeoReport gr{};
             memcpy(&gr, r.data.data(), CONTROL_DATA_LEN);
+
             char pos[24], note[9] = {0};
+
             geo_pair(gr, pos, sizeof(pos));
             memcpy(note, gr.note, sizeof(gr.note));
 
@@ -267,37 +344,56 @@ void loop() {
             Serial.println(F("\""));
 
             g_ok++;
-            g_consecutive_fails = 0;   // a clean lap: the ring is healthy
-            hold_ms = REPORT_HOLD_MS;  // a report is worth reading
+            g_consecutive_fails = 0;
 
-            // Send the reply BEFORE drawing, then draw once. The previous
-            // version drew the report and then immediately overwrote it
-            // with a "replying" screen, so the report itself was visible
-            // for microseconds and never actually readable.
+            hold_ms = REPORT_HOLD_MS;
+
+            // Send reply if this is an access request.
             const char* reply_line = "";
+
             if (r.msg_type == PacketType::ACCESS_REQUEST) {
+
                 Serial.println(F("  -> granting + sending downlink reply..."));
+
                 uint8_t reply[CONTROL_DATA_LEN] = {0};
+
                 memcpy(reply, "200 OK ack", 10);
-                WirePacket dl = gw.build_downlink(r.origin_position, PacketType::GRANT_DOWNLINK, reply, g_seq);
-                sendFrame(1, dl); // downlink always starts at F1
+
+                WirePacket dl = gw.build_downlink(
+                    r.origin_position,
+                    PacketType::GRANT_DOWNLINK,
+                    reply,
+                    g_seq
+                );
+
+                sendFrame(1, dl);
+
                 reply_line = "replied: 200 OK";
             }
 
-            {
-                char sc[22];
-                scoreLine(sc, sizeof(sc));
-                oledShow("** REPORT **", cyc, pos, note, reply_line, sc);
-            }
+            // Display the genuine report on the OLED.
+            char sc[22];
+            scoreLine(sc, sizeof(sc));
+
+            oledShow("** REPORT **", cyc,
+                     pos, note, reply_line, sc);
         }
-        // Keep the result on the OLED readable; otherwise the next loop()
-        // iteration overwrites it with "sending carrier..." within ms.
-        delay(hold_ms);
-    } else {
-        Serial.println(F("  no reply within timeout (check F1/F2 power + wiring)"));
-        oledShow("GATEWAY", cyc, "no reply (timeout)", "check F1/F2 power");
-        g_consecutive_fails++;
     }
+
+    // Keep the result visible on the OLED.
+    delay(hold_ms);
+
+}
+else {
+
+    Serial.println(F("  no reply within timeout (check F1/F2 power + wiring)"));
+
+    oledShow("GATEWAY", cyc,
+             "no reply (timeout)",
+             "check F1/F2 power");
+
+    g_consecutive_fails++;
+}
     if (g_consecutive_fails >= RING_REANNOUNCE_FAILS) {
         // Several laps in a row came back wrong or not at all -- most
         // likely a forwarder rebooted onto the wrong epoch. Re-announce
