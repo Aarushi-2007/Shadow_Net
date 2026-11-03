@@ -88,6 +88,7 @@
 #define REPORT_HOLD_MS 9000        // a real report arrived -- hold it
                                    // (this is your privacy/latency/duty-cycle
                                    // tradeoff — see the process guide, Phase 4)
+#define TAMPER_HOLD_MS 10000       // attack detected -- hold it for 10 s
 
 // --- Onboard OLED (SSD1306 128x64, I2C) — Heltec WiFi LoRa 32 V3 ---------
 //     Shares the Vext power rail with the radio (VEXT_PIN LOW = on).
