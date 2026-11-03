@@ -226,6 +226,7 @@ void loop() {
             Serial.println(F("  received a frame but it didn't decode (wrong ring / tampered?)"));
             g_rejected++;
             g_consecutive_fails++;
+            hold_ms = TAMPER_HOLD_MS;
             {
                 char sc[22];
                 scoreLine(sc, sizeof(sc));
