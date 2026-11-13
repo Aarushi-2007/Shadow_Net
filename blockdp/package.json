@@ -1,0 +1,22 @@
+{
+  "name": "blockdp",
+  "version": "1.0.0",
+  "description": "**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^18.0.10",
+    "ethers": "^6.17.0",
+    "keccak256": "^1.0.6",
+    "merkletreejs": "^0.6.0"
+  }
+}
