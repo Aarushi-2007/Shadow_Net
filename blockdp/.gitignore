@@ -1,0 +1,5 @@
+.env
+node_modules/
+gateway/batches/gateway/node-registry.json
+gateway/node-registry.json
+gateway/batches/

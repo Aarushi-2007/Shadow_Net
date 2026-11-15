@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -66,7 +65,7 @@ function NodeIcon({ type }) {
   );
 }
 
-export default function App() {
+function Dashboard({ onLogout }) {
   const [nodes, setNodes] = useState(() =>
     Object.fromEntries(
       INITIAL_NODES.map((node) => [
@@ -266,6 +265,9 @@ export default function App() {
               : "Web Bluetooth unavailable"}
           </span>
           <span className="version-label">LOCAL CONSOLE · v1.0</span>
+          <button className="logout-button" onClick={onLogout}>
+            LOG OUT ↗
+          </button>
         </div>
       </header>
 
@@ -586,4 +588,148 @@ export default function App() {
       </footer>
     </main>
   );
+}
+
+function LoginPage({ onLogin }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+
+    if (username === "Shadow_Net" && password === "secure123") {
+      onLogin();
+    } else {
+      setError("Invalid username or password.");
+    }
+  }
+
+  return (
+    <main className="login-shell">
+      <div className="ambient ambient-one" />
+      <div className="ambient ambient-two" />
+
+      <header className="login-topbar">
+        <a className="brand" href="#login">
+          <span className="brand-mark">S</span>
+          <span>
+            <strong>SHADOWNET</strong>
+            <small>FIELD CONTROL CENTER</small>
+          </span>
+        </a>
+        <span className="browser-pill ok">
+          <i />
+          SECURE ACCESS PORTAL
+        </span>
+      </header>
+
+      <section className="login-layout">
+        <div className="login-intro">
+          <div className="eyebrow">
+            <span className="eyebrow-line" />
+            MESH NETWORK / AUTHENTICATION
+          </div>
+
+          <h1>Enter the <em>ShadowNet</em> network.</h1>
+          <p>
+            A privacy-first communication network. Authenticate to access your
+            field nodes, submit reports and monitor network activity.
+          </p>
+
+          <div className="login-network">
+            <div className="login-network-ring ring-one" />
+            <div className="login-network-ring ring-two" />
+            <div className="login-network-core">SN</div>
+            <span className="login-network-node node-a" />
+            <span className="login-network-node node-b" />
+            <span className="login-network-node node-c" />
+          </div>
+
+          <div className="login-features">
+            <span>BLE CONTROL PLANE</span>
+            <span>LORA DATA PLANE</span>
+            <span>PRIVACY FIRST</span>
+          </div>
+        </div>
+
+        <section className="login-card">
+          <div className="section-index">AUTHENTICATION / 01</div>
+          <h2>Welcome back.</h2>
+          <p className="login-description">
+            Enter your credentials to access the control center.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            <label htmlFor="login-username">USERNAME</label>
+            <input
+              id="login-username"
+              type="text"
+              placeholder="Enter username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              autoComplete="username"
+              required
+            />
+
+            <label htmlFor="login-password">PASSWORD</label>
+            <div className="login-password-wrap">
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((current) => !current)}
+              >
+                {showPassword ? "HIDE" : "SHOW"}
+              </button>
+            </div>
+
+            {error && <div className="login-error">{error}</div>}
+
+            <button type="submit" className="login-submit">
+              ACCESS CONTROL CENTER <span>→</span>
+            </button>
+          </form>
+
+          <div className="login-card-footer">
+            <span className="live-dot" />
+            SHADOWNET SYSTEM READY
+          </div>
+        </section>
+      </section>
+
+      <footer className="login-footer">
+        <span>SHADOWNET © 2026</span>
+        <span>PRIVACY THROUGH TECHNOLOGY</span>
+      </footer>
+    </main>
+  );
+}
+
+export default function App() {
+  const [authenticated, setAuthenticated] = useState(
+    () => sessionStorage.getItem("shadownet_authenticated") === "true"
+  );
+
+  function handleLogin() {
+    sessionStorage.setItem("shadownet_authenticated", "true");
+    setAuthenticated(true);
+  }
+
+  function handleLogout() {
+    sessionStorage.removeItem("shadownet_authenticated");
+    setAuthenticated(false);
+  }
+
+  if (!authenticated) return <LoginPage onLogin={handleLogin} />;
+  return <Dashboard onLogout={handleLogout} />;
 }
