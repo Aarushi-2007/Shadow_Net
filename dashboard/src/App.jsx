@@ -20,21 +20,21 @@ const INITIAL_NODES = [
     id: "F1",
     label: "Forwarder 01",
     description: "Originates reports into the LoRa ring",
-    bleName: "ShadowNet_F1",
+    bleName: "SadraNet_F1",
     type: "forwarder",
   },
   {
     id: "F2",
     label: "Forwarder 02",
     description: "Originates reports into the LoRa ring",
-    bleName: "ShadowNet_F2",
+    bleName: "SadraNet_F2",
     type: "forwarder",
   },
   {
     id: "Gateway",
     label: "Gateway",
     description: "Receives LoRa reports and publishes status",
-    bleName: "ShadowNet_GW",
+    bleName: "SadraNet_GW",
     type: "gateway",
   },
 ];
@@ -254,10 +254,10 @@ function Dashboard({ onLogout }) {
       <div className="ambient ambient-two" />
 
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="ShadowNet home">
+        <a className="brand" href="#top" aria-label="SadraNet home">
           <span className="brand-mark">S</span>
           <span>
-            <strong>SHADOWNET</strong>
+            <strong>SADRANET</strong>
             <small>FIELD CONTROL CENTER</small>
           </span>
         </a>
@@ -284,7 +284,7 @@ function Dashboard({ onLogout }) {
           </div>
 
           <h1>
-            ShadowNet <em>Control Center</em>
+            SadraNet <em>Control Center</em>
           </h1>
 
           <p>
@@ -389,7 +389,7 @@ function Dashboard({ onLogout }) {
 
         <p className="helper-text">
           Each Connect button opens the browser Bluetooth device picker.
-          Select the matching ShadowNet device.
+          Select the matching SadraNet device.
         </p>
       </section>
 
@@ -586,7 +586,7 @@ function Dashboard({ onLogout }) {
       </section>
 
       <footer className="footer">
-        <span>SHADOWNET / LOCAL-FIRST FIELD INTERFACE</span>
+        <span>SADRANET / LOCAL-FIRST FIELD INTERFACE</span>
         <span>
           BLE CONTROL PLANE <b>·</b> LORA DATA PLANE
         </span>
@@ -605,7 +605,7 @@ function LoginPage({ onLogin }) {
     event.preventDefault();
     setError("");
 
-    if (username === "Shadow_Net" && password === "secure123") {
+    if (username === "SadraNet" && password === "secure123") {
       onLogin();
     } else {
       setError("Invalid username or password.");
@@ -621,7 +621,7 @@ function LoginPage({ onLogin }) {
         <a className="brand" href="#login">
           <span className="brand-mark">S</span>
           <span>
-            <strong>SHADOWNET</strong>
+            <strong>SADRANET</strong>
             <small>FIELD CONTROL CENTER</small>
           </span>
         </a>
@@ -638,7 +638,7 @@ function LoginPage({ onLogin }) {
             MESH NETWORK / AUTHENTICATION
           </div>
 
-          <h1>Enter the <em>ShadowNet</em> network.</h1>
+          <h1>Enter the <em>SadraNet</em> network.</h1>
           <p>
             A privacy-first communication network. Authenticate to access your
             field nodes, submit reports and monitor network activity.
@@ -707,13 +707,13 @@ function LoginPage({ onLogin }) {
 
           <div className="login-card-footer">
             <span className="live-dot" />
-            SHADOWNET SYSTEM READY
+            SADRANET SYSTEM READY
           </div>
         </section>
       </section>
 
       <footer className="login-footer">
-        <span>SHADOWNET © 2026</span>
+        <span>SADRANET © 2026</span>
         <span>PRIVACY THROUGH TECHNOLOGY</span>
       </footer>
     </main>
@@ -722,16 +722,16 @@ function LoginPage({ onLogin }) {
 
 export default function App() {
   const [authenticated, setAuthenticated] = useState(
-    () => sessionStorage.getItem("shadownet_authenticated") === "true"
+    () => sessionStorage.getItem("sadranet_authenticated") === "true"
   );
 
   function handleLogin() {
-    sessionStorage.setItem("shadownet_authenticated", "true");
+    sessionStorage.setItem("sadranet_authenticated", "true");
     setAuthenticated(true);
   }
 
   function handleLogout() {
-    sessionStorage.removeItem("shadownet_authenticated");
+    sessionStorage.removeItem("sadranet_authenticated");
     setAuthenticated(false);
   }
 
