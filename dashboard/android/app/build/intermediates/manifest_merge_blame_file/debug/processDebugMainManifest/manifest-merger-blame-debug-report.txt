@@ -1,0 +1,187 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.sadranet.app"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="24"
+9        android:targetSdkVersion="36" />
+10
+11    <!-- Permissions -->
+12
+13    <uses-permission android:name="android.permission.INTERNET" />
+13-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:40:5-67
+13-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:40:22-64
+14    <!-- Bluetooth -->
+15    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+15-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:5-81
+15-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:8:22-78
+16    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+16-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:5-79
+16-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:9:22-76
+17    <uses-permission
+17-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:10:5-12:38
+18        android:name="android.permission.BLUETOOTH"
+18-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:11:9-52
+19        android:maxSdkVersion="30" />
+19-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:12:9-35
+20    <uses-permission
+20-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:13:5-15:38
+21        android:name="android.permission.BLUETOOTH_ADMIN"
+21-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:14:9-58
+22        android:maxSdkVersion="30" />
+22-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:15:9-35
+23    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+23-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:16:5-18:31
+23-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:17:9-57
+24    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+24-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:19:5-21:31
+24-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:20:9-60
+25
+26    <uses-feature
+26-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:23:5-25:36
+27        android:name="android.hardware.bluetooth_le"
+27-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:24:9-53
+28        android:required="false" />
+28-->[:capacitor-community-bluetooth-le] /Users/aarushiguglani/Downloads/ShadowNet/dashboard/node_modules/@capacitor-community/bluetooth-le/android/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:25:9-33
+29
+30    <permission
+30-->[androidx.core:core:1.17.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/AndroidManifest.xml:22:5-24:47
+31        android:name="com.sadranet.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+31-->[androidx.core:core:1.17.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/AndroidManifest.xml:23:9-81
+32        android:protectionLevel="signature" />
+32-->[androidx.core:core:1.17.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/AndroidManifest.xml:24:9-44
+33
+34    <uses-permission android:name="com.sadranet.app.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+34-->[androidx.core:core:1.17.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/AndroidManifest.xml:26:5-97
+34-->[androidx.core:core:1.17.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/AndroidManifest.xml:26:22-94
+35
+36    <application
+36-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:4:5-36:19
+37        android:allowBackup="true"
+37-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:5:9-35
+38        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+38-->[androidx.core:core:1.17.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/11094a199bb7945826b161d8a9c17beb/transformed/core-1.17.0/AndroidManifest.xml:28:18-86
+39        android:debuggable="true"
+40        android:extractNativeLibs="false"
+41        android:icon="@mipmap/ic_launcher"
+41-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:6:9-43
+42        android:label="@string/app_name"
+42-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:7:9-41
+43        android:roundIcon="@mipmap/ic_launcher_round"
+43-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:8:9-54
+44        android:supportsRtl="true"
+44-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:9:9-35
+45        android:theme="@style/AppTheme" >
+45-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:10:9-40
+46        <activity
+46-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:12:9-25:20
+47            android:name="com.sadranet.app.MainActivity"
+47-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:14:13-41
+48            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+48-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:13:13-148
+49            android:exported="true"
+49-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:18:13-36
+50            android:label="@string/title_activity_main"
+50-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:15:13-56
+51            android:launchMode="singleTask"
+51-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:17:13-44
+52            android:theme="@style/AppTheme.NoActionBarLaunch" >
+52-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:16:13-62
+53            <intent-filter>
+53-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:20:13-23:29
+54                <action android:name="android.intent.action.MAIN" />
+54-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:21:17-69
+54-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:21:25-66
+55
+56                <category android:name="android.intent.category.LAUNCHER" />
+56-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:22:17-77
+56-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:22:27-74
+57            </intent-filter>
+58        </activity>
+59
+60        <provider
+61            android:name="androidx.core.content.FileProvider"
+61-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:28:13-62
+62            android:authorities="com.sadranet.app.fileprovider"
+62-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:29:13-64
+63            android:exported="false"
+63-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:30:13-37
+64            android:grantUriPermissions="true" >
+64-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:31:13-47
+65            <meta-data
+65-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:32:13-34:64
+66                android:name="android.support.FILE_PROVIDER_PATHS"
+66-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:33:17-67
+67                android:resource="@xml/file_paths" />
+67-->/Users/aarushiguglani/Downloads/ShadowNet/dashboard/android/app/src/main/AndroidManifest.xml:34:17-51
+68        </provider>
+69        <provider
+69-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:24:9-32:20
+70            android:name="androidx.startup.InitializationProvider"
+70-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:25:13-67
+71            android:authorities="com.sadranet.app.androidx-startup"
+71-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:26:13-68
+72            android:exported="false" >
+72-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:27:13-37
+73            <meta-data
+73-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:29:13-31:52
+74                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+74-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:30:17-75
+75                android:value="androidx.startup" />
+75-->[androidx.emoji2:emoji2:1.3.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/353d69426d62513a7e19e841051a3a44/transformed/emoji2-1.3.0/AndroidManifest.xml:31:17-49
+76            <meta-data
+76-->[androidx.lifecycle:lifecycle-process:2.6.2] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/14a3b51da1167f75215e7e32d2231e74/transformed/lifecycle-process-2.6.2/AndroidManifest.xml:29:13-31:52
+77                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+77-->[androidx.lifecycle:lifecycle-process:2.6.2] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/14a3b51da1167f75215e7e32d2231e74/transformed/lifecycle-process-2.6.2/AndroidManifest.xml:30:17-78
+78                android:value="androidx.startup" />
+78-->[androidx.lifecycle:lifecycle-process:2.6.2] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/14a3b51da1167f75215e7e32d2231e74/transformed/lifecycle-process-2.6.2/AndroidManifest.xml:31:17-49
+79            <meta-data
+79-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:29:13-31:52
+80                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+80-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:30:17-85
+81                android:value="androidx.startup" />
+81-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:31:17-49
+82        </provider>
+83
+84        <receiver
+84-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:34:9-52:20
+85            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+85-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:35:13-76
+86            android:directBootAware="false"
+86-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:36:13-44
+87            android:enabled="true"
+87-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:37:13-35
+88            android:exported="true"
+88-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:38:13-36
+89            android:permission="android.permission.DUMP" >
+89-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:39:13-57
+90            <intent-filter>
+90-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:40:13-42:29
+91                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+91-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:41:17-91
+91-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:41:25-88
+92            </intent-filter>
+93            <intent-filter>
+93-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:43:13-45:29
+94                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+94-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:44:17-85
+94-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:44:25-82
+95            </intent-filter>
+96            <intent-filter>
+96-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:46:13-48:29
+97                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+97-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:47:17-88
+97-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:47:25-85
+98            </intent-filter>
+99            <intent-filter>
+99-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:49:13-51:29
+100                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+100-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:50:17-95
+100-->[androidx.profileinstaller:profileinstaller:1.4.0] /Users/aarushiguglani/.gradle/caches/8.14.3/transforms/f95ab50c54d3211c648684c462933e30/transformed/profileinstaller-1.4.0/AndroidManifest.xml:50:25-92
+101            </intent-filter>
+102        </receiver>
+103    </application>
+104
+105</manifest>
